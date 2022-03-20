@@ -17,6 +17,8 @@ export const ZeneithDB = {
     getDatabase: function (name) {
         return this.core.getDatabase(name);
     },
-    deleteDatabase: function (name) { },
+    deleteDatabase: function (name) {
+        return this.core.deleteDatabase(name);
+    },
 };
 ZeneithDB.core.zeneith = ZeneithDB;

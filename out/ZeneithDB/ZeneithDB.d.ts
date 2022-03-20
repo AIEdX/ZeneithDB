@@ -8,5 +8,5 @@ export declare const ZeneithDB: {
     createDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./index.js").DataBase>;
     updateDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./index.js").DataBase>;
     getDatabase: (name: string) => Promise<import("./index.js").DataBase>;
-    deleteDatabase: (name: string) => void;
+    deleteDatabase: (name: string) => Promise<false | undefined>;
 };
