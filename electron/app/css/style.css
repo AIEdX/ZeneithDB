@@ -1,0 +1,90 @@
+body.default {
+  --primary: rgba(120, 23, 145, 0.897);
+  --secondary: rgba(198, 52, 235, 0.897);
+  --bgDark: rgba(66, 7, 73, 0.479);
+  --bgMenu: rgba(0,0,0,.6);
+  --bgMenu2: rgba(36, 33, 35, 0.9);
+  --bgMenu3: rgba(55, 37, 70, 0.5);
+  --fontColorMain: white;
+  --node1: rgba(62, 224, 211, 0.5);
+  --node2: rgba(25, 165, 207, 0.5);
+  --node3: rgba(57, 189, 194, 0.5);
+  --node4: rgba(0, 247, 255, 0.794);
+  --node5: rgba(93, 236, 241, 0.876);
+  /*Top Bar Buttons*/
+  --openproject: var(--dsblue);
+  --openprojecthover: var(--dsblue2);
+  --saveproject: var(--dsgreen);
+  --saveprojecthover: var(--dsgreen2);
+  --editrosettings: var(--steel);
+  --editrosettingshover: var(--steelwarm);
+  --infobg: var(--dsinfo);
+  --infobg2: var(--dsinfo2);
+  --infobg3: var(--dsinfo3);
+  --menuBackGround: var(--opaque);
+  --accordion1: rgba(105, 119, 202, 0.123);
+}
+
+.canvasWrap {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+}
+
+#data-editor-window,
+#data-editor-window {
+  position: absolute;
+}
+
+body {
+  --topBarHeight: 30px;
+  --structureEditMenuZIbdex: 100;
+  --nodeFlowMenuZIndex: 200;
+  --steel: rgb(136, 149, 151);
+  --steelwarm: rgb(65, 88, 92);
+  --steelcool: rgb(93, 117, 121);
+  --steelinfo: rgba(93, 117, 121,.5);
+  --steelinfo2:rgba(95, 130, 136, 0.4);
+  --dspurple: rgb(135, 27, 155);
+  --dspurple2: rgb(181, 70, 200);
+  --dsblue: rgb(47, 49, 144);
+  --dsblue2: rgb(68, 70, 199);
+  --dsgreen: rgb(36, 170, 47);
+  --dsgreen2: rgb(87, 224, 98);
+  --dsinfo: rgba(94, 12, 105,.1);
+  --dsinfo2: rgba(175, 77, 170, 0.1);
+  --dsinfo3: rgba(94, 12, 105, 0.56);
+  --opaque: rgb(0,0,0,.5);
+}
+
+html,
+body {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: "Lucida Console", "Courier New", monospace;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background: var(--bgMenu);
+}
+
+#renderCanvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  touch-action: none;
+  outline: none;
+  display: block;
+  border: none;
+}
+
+/*# sourceMappingURL=style.css.map */
