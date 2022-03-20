@@ -1,1 +1,1 @@
-export * from "./ZeniethDB/ZeneithDB.js";
+export * from "./ZeneithDB/ZeneithDB.js";

@@ -1,3 +1,3 @@
-export * from "./ZeniethDB/ZeneithDB.js";
+export * from "./ZeneithDB/ZeneithDB.js";
 
 console.log("hello from the Zeneith")
