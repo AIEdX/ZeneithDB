@@ -1,6 +1,6 @@
 {
   "name": "zeneithdb",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A TypeScript library for working with IndexDB.",
   "type" : "module",
   "main": "out/index.js",
