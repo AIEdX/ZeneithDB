@@ -1,5 +1,5 @@
 {
-  "name": "zeneithDB",
+  "name": "zeneithdb",
   "version": "0.0.0",
   "description": "A TypeScript library for working with IndexDB.",
   "type" : "module",
