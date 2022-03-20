@@ -5,8 +5,8 @@ export declare const ZeneithDB: {
     core: ZeneithDBCore;
     $INIT: () => Promise<void>;
     databaseExists: (dataBaseName: string) => Promise<boolean>;
-    createDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./Database/Database.js").DataBase>;
-    updateDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./Database/Database.js").DataBase>;
-    getDatabase: (name: string) => Promise<import("./Database/Database.js").DataBase>;
+    createDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./index.js").DataBase>;
+    updateDatabase: (data: ZeneithDatabaseCreationData) => Promise<import("./index.js").DataBase>;
+    getDatabase: (name: string) => Promise<import("./index.js").DataBase>;
     deleteDatabase: (name: string) => void;
 };

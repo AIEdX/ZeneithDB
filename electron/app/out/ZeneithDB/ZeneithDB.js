@@ -9,9 +9,7 @@ export const ZeneithDB = {
         return await this.core.checkIfDatabaseExists(dataBaseName);
     },
     createDatabase: async function (data) {
-        const database = await this.core.createDatabase(data);
-        console.log(database);
-        return database;
+        return this.core.createDatabase(data);
     },
     updateDatabase: function (data) {
         return this.core.createDatabase(data);

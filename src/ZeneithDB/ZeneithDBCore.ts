@@ -3,6 +3,7 @@ import { ZeneithDB } from "./ZeneithDB.js";
 import { DataBase } from "./Database/Database.js";
 import { ZeneithDatabaseCreationData } from "./Meta/Database/Database.types.js";
 import { ZeneithDatabaseSchema } from "./Meta/Zeneith/Database.schema.js";
+import { ZeneithUtil } from "./ZeneithUtil.js";
 
 export class ZeneithDBCore {
  zeneith: typeof ZeneithDB;
@@ -10,6 +11,8 @@ export class ZeneithDBCore {
  dataBase: DataBase;
 
  loadedDatabases: Record<string, DataBase> = {};
+
+ util = ZeneithUtil;
 
  async initialize() {
   this.dataBase = new DataBase(
@@ -61,7 +64,6 @@ export class ZeneithDBCore {
    );
   }
 
-  console.log("hello");
   for (const collection of data.collections) {
    this.dataBase.setData(
     "collections",
@@ -116,11 +118,30 @@ export class ZeneithDBCore {
   await this.dataBase.open();
   const check = await this.dataBase.getData("databases", dataBasename);
   this.dataBase.close();
-  console.log(check);
   if (!check) {
    return false;
   } else {
    return true;
   }
+ }
+
+ async deleteDatabase(dataBasename: string) {
+  await this.dataBase.open();
+  const check = await this.dataBase.getData<ZeneithDatabaseSchema>(
+   "databases",
+   dataBasename
+  );
+  this.dataBase.close();
+  if (!check) {
+   return false;
+  }
+  this.dataBase.removeData("databases", dataBasename);
+  for (const collection of check.creationData.collections) {
+   await this.dataBase.removeData(
+    "collections",
+    `${dataBasename}-${collection.name}`
+   );
+  }
+  window.indexedDB.deleteDatabase(dataBasename);
  }
 }

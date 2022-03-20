@@ -1,8 +1,10 @@
 import { DataBase } from "./Database/Database.js";
+import { ZeneithUtil } from "./ZeneithUtil.js";
 export class ZeneithDBCore {
     zeneith;
     dataBase;
     loadedDatabases = {};
+    util = ZeneithUtil;
     async initialize() {
         this.dataBase = new DataBase({
             databaseName: "ZeneithDB",
@@ -37,7 +39,6 @@ export class ZeneithDBCore {
         if (databaseCheck) {
             throw new Error(`The database ${data.databaseName} already exists. Use 'updateDatabase' to update the database instead.`);
         }
-        console.log("hello");
         for (const collection of data.collections) {
             this.dataBase.setData("collections", `${data.databaseName}-${collection.name}`, collection.schema);
         }
@@ -72,12 +73,24 @@ export class ZeneithDBCore {
         await this.dataBase.open();
         const check = await this.dataBase.getData("databases", dataBasename);
         this.dataBase.close();
-        console.log(check);
         if (!check) {
             return false;
         }
         else {
             return true;
         }
+    }
+    async deleteDatabase(dataBasename) {
+        await this.dataBase.open();
+        const check = await this.dataBase.getData("databases", dataBasename);
+        this.dataBase.close();
+        if (!check) {
+            return false;
+        }
+        this.dataBase.removeData("databases", dataBasename);
+        for (const collection of check.creationData.collections) {
+            await this.dataBase.removeData("collections", `${dataBasename}-${collection.name}`);
+        }
+        window.indexedDB.deleteDatabase(dataBasename);
     }
 }

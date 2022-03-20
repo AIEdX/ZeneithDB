@@ -1,8 +1,9 @@
+import { ZeneithUtil } from "../ZeneithUtil.js";
 export class DataBase {
     creationData;
     outsideZeneith;
-    dataBaseVersion = 2;
     dataBaseName = "";
+    util = ZeneithUtil;
     opened = false;
     db = null;
     constructor(creationData, outsideZeneith = false) {
@@ -12,6 +13,9 @@ export class DataBase {
     }
     isOpen() {
         return this.opened && this.db !== null;
+    }
+    getUUID() {
+        return ZeneithUtil.getUUID();
     }
     open() {
         if (this.isOpen())
@@ -95,9 +99,11 @@ export class DataBase {
             }
         }
     }
-    updateCollectionScehma(collectionName, scehma) { }
-    addNewCollection(collectionName, scehma) { }
-    removeCollection(collectionName, scehma) { }
+    /*  updateCollectionScehma(collectionName: string, scehma: ZeneithSchema) {}
+   
+    addNewCollection(collectionName: string, scehma: ZeneithSchema) {}
+   
+    removeCollection(collectionName: string, scehma: ZeneithSchema) {} */
     getDatabaeVersion() {
         const prom = new Promise((resolve, reject) => {
             const request = window.indexedDB.open(this.dataBaseName);
@@ -148,20 +154,88 @@ export class DataBase {
         });
         return prom;
     }
+    getAllData(collectionName) {
+        const prom = new Promise((resolve, reject) => {
+            if (!this.db) {
+                throw new Error(`Database ${this.dataBaseName} is not opened.`);
+            }
+            const transaction = this.db.transaction([collectionName], "readonly");
+            const request = transaction
+                .objectStore(collectionName)
+                .getAll();
+            request.onerror = (event) => {
+                reject(false);
+                transaction.commit();
+            };
+            request.onsuccess = (event) => {
+                if (!request.result) {
+                    resolve(false);
+                }
+                else {
+                    resolve(request.result);
+                }
+                transaction.commit();
+            };
+        });
+        return prom;
+    }
+    getAllKeys(collectionName) {
+        const prom = new Promise((resolve, reject) => {
+            if (!this.db) {
+                throw new Error(`Database ${this.dataBaseName} is not opened.`);
+            }
+            const transaction = this.db.transaction([collectionName], "readonly");
+            const request = transaction
+                .objectStore(collectionName)
+                .getAllKeys();
+            request.onerror = (event) => {
+                reject(false);
+                transaction.commit();
+            };
+            request.onsuccess = (event) => {
+                if (!request.result) {
+                    resolve(false);
+                }
+                else {
+                    resolve(request.result);
+                }
+                transaction.commit();
+            };
+        });
+        return prom;
+    }
     removeData(collectionName, key) {
         const prom = new Promise((resolve, reject) => {
             if (!this.db) {
                 throw new Error(`Database ${this.dataBaseName} is not opened.`);
             }
-            const request = this.db
-                .transaction([collectionName], "readwrite")
-                .objectStore(collectionName)
-                .delete(key);
+            const transaction = this.db.transaction([collectionName], "readwrite");
+            const request = transaction.objectStore(collectionName).delete(key);
             request.onerror = (event) => {
                 reject(false);
+                transaction.commit();
             };
             request.onsuccess = (event) => {
                 resolve(true);
+                transaction.commit();
+            };
+        });
+        return prom;
+    }
+    removeAllData(collectionName) {
+        const prom = new Promise((resolve, reject) => {
+            if (!this.db) {
+                throw new Error(`Database ${this.dataBaseName} is not opened.`);
+            }
+            const transaction = this.db.transaction([collectionName], "readwrite");
+            const request = transaction.objectStore(collectionName).clear();
+            request.onerror = (event) => {
+                reject(false);
+                transaction.commit();
+            };
+            request.onsuccess = (event) => {
+                resolve(true);
+                transaction.commit();
             };
         });
         return prom;
@@ -171,28 +245,26 @@ export class DataBase {
             if (!this.db) {
                 throw new Error(`Database ${this.dataBaseName} is not opened.`);
             }
-            const objectStore = this.db
-                .transaction([collectionName], "readwrite")
-                .objectStore(collectionName);
-            const requestUpdate = objectStore.put(setData, key);
-            requestUpdate.onerror = (event) => {
+            const transaction = this.db.transaction([collectionName], "readwrite");
+            const request = transaction.objectStore(collectionName).put(setData, key);
+            request.onerror = (event) => {
                 reject(false);
+                transaction.commit();
             };
-            requestUpdate.onsuccess = (event) => {
+            request.onsuccess = (event) => {
                 resolve(true);
+                transaction.commit();
             };
         });
         return prom;
     }
-    updateData(collectionName, key, updateData) {
+    updateData(collectionName, key, updateFunction) {
         const prom = new Promise((resolve, reject) => {
             if (!this.db) {
                 throw new Error(`Database ${this.dataBaseName} is not opened.`);
             }
-            const objectStore = this.db
-                .transaction([collectionName], "readwrite")
-                .objectStore(collectionName);
-            objectStore.getAll();
+            const transaction = this.db.transaction([collectionName], "readwrite");
+            const objectStore = transaction.objectStore(collectionName);
             const request = objectStore.get(key);
             request.onerror = (event) => {
                 reject(false);
@@ -200,15 +272,20 @@ export class DataBase {
             request.onsuccess = (event) => {
                 //@ts-ignore
                 const data = event.target.result;
-                for (const key of Object.keys(updateData)) {
-                    data[key] = updateData[key];
+                if (!data) {
+                    resolve(false);
+                    transaction.commit();
+                    return;
                 }
-                var requestUpdate = objectStore.put(data);
+                const newData = updateFunction(data);
+                const requestUpdate = objectStore.put(newData);
                 requestUpdate.onerror = (event) => {
                     reject(false);
+                    transaction.commit();
                 };
                 requestUpdate.onsuccess = (event) => {
                     resolve(true);
+                    transaction.commit();
                 };
             };
         });

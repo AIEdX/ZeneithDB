@@ -14,15 +14,13 @@ export const ZeneithDB = {
   return await this.core.checkIfDatabaseExists(dataBaseName);
  },
  createDatabase: async function (data: ZeneithDatabaseCreationData) {
-  const database = await this.core.createDatabase(data);
-  console.log(database);
-  return database;
+  return this.core.createDatabase(data);
  },
  updateDatabase: function (data: ZeneithDatabaseCreationData) {
   return this.core.createDatabase(data);
  },
- getDatabase:  function (name: string) {
-   return  this.core.getDatabase(name);
+ getDatabase: function (name: string) {
+  return this.core.getDatabase(name);
  },
  deleteDatabase: function (name: string) {},
 };
