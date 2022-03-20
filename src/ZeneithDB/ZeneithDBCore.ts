@@ -2,9 +2,14 @@ import { ZeneithDB } from "./ZeneithDB.js";
 
 import { DataBase } from "./Database/Database.js";
 import { ZeneithDatabaseCreationData } from "./Meta/Database/Database.types.js";
+import { ZeneithDatabaseSchema } from "./Meta/Zeneith/Database.schema.js";
+
 export class ZeneithDBCore {
  zeneith: typeof ZeneithDB;
+
  dataBase: DataBase;
+
+ loadedDatabases: Record<string, DataBase> = {};
 
  async initialize() {
   this.dataBase = new DataBase(
@@ -13,38 +18,15 @@ export class ZeneithDBCore {
     collections: [
      {
       name: "meta",
-      schema: [
-       {
-        name: "version",
-        valueType: "number",
-       },
-      ],
+      schema: [],
      },
      {
       name: "collections",
-      schema: [
-       {
-        name: "database",
-        valueType: "string",
-       },
-       {
-        name: "schema",
-        valueType: "any[]",
-       },
-      ],
+      schema: [],
      },
      {
       name: "databases",
-      schema: [
-       {
-        name: "name",
-        valueType: "string",
-       },
-       {
-        name: "collections",
-        valueType: "object",
-       },
-      ],
+      schema: [],
      },
     ],
    },
@@ -66,9 +48,79 @@ export class ZeneithDBCore {
   this.dataBase.close();
  }
 
- createDatabase(data: ZeneithDatabaseCreationData) {
+ async createDatabase(data: ZeneithDatabaseCreationData) {
+  await this.dataBase.open();
+  const databaseCheck = await this.dataBase.getData(
+   "databases",
+   data.databaseName
+  );
+
+  if (databaseCheck) {
+   throw new Error(
+    `The database ${data.databaseName} already exists. Use 'updateDatabase' to update the database instead.`
+   );
+  }
+
+  console.log("hello");
+  for (const collection of data.collections) {
+   this.dataBase.setData(
+    "collections",
+    `${data.databaseName}-${collection.name}`,
+    collection.schema
+   );
+  }
+
+  this.dataBase.setData<ZeneithDatabaseSchema>("databases", data.databaseName, {
+   collectionCount: data.collections.length,
+   creationData: data,
+  });
+  const database = new DataBase(data);
+  await database.forceUpdate();
+
+  this.dataBase.close();
+  return database;
+ }
+
+ updateDatabase(data: ZeneithDatabaseCreationData) {
   const database = new DataBase(data);
 
   return database;
+ }
+
+ async getDatabase(dataBasename: string) {
+  if (this.loadedDatabases[dataBasename]) {
+   return this.loadedDatabases[dataBasename];
+  }
+
+  await this.dataBase.open();
+
+  const dataBaseCheck = await this.dataBase.getData<ZeneithDatabaseSchema>(
+   "databases",
+   dataBasename
+  );
+
+  if (!dataBaseCheck) {
+   throw new Error(
+    `The database ${dataBasename} does not exists inside of ZeneithDB.`
+   );
+  }
+
+  this.dataBase.close();
+  const database = new DataBase(dataBaseCheck.creationData);
+
+  this.loadedDatabases[dataBasename] = database;
+  return database;
+ }
+
+ async checkIfDatabaseExists(dataBasename: string): Promise<boolean> {
+  await this.dataBase.open();
+  const check = await this.dataBase.getData("databases", dataBasename);
+  this.dataBase.close();
+  console.log(check);
+  if (!check) {
+   return false;
+  } else {
+   return true;
+  }
  }
 }

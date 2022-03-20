@@ -1,3 +1,3 @@
-export * from "./ZeneithDB/ZeneithDB.js";
-
-console.log("hello from the Zeneith")
+export * from "./ZeneithDB/index.js";
+export * from "./ZeneithDB/Meta/index";
+console.log("hello from the Zeneith");

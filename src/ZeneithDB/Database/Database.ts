@@ -21,13 +21,14 @@ export class DataBase {
  }
 
  isOpen() {
-  return this.opened;
+  return this.opened && this.db !== null;
  }
 
- open() {
+ open(): Promise<boolean> | true {
+  if (this.isOpen()) return true;
+  const self = this;
   const prom: Promise<boolean> = new Promise((resolve, reject) => {
    const request = window.indexedDB.open(this.dataBaseName);
-   const self = this;
    request.onerror = function (event) {
     console.warn("Error when opening IndexDB");
     reject(false);
@@ -42,7 +43,7 @@ export class DataBase {
   return prom;
  }
 
- close() {
+ close(): boolean {
   if (!this.db) {
    return false;
   }
@@ -52,45 +53,50 @@ export class DataBase {
  }
 
  async forceUpdate() {
-  let version = await this.getDatabaeVersion();
-
   const self = this;
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
+   let version = await this.getDatabaeVersion();
 
-  const request = window.indexedDB.open(this.dataBaseName, version + 1);
+   const request = window.indexedDB.open(this.dataBaseName, version + 1);
 
-  request.onerror = function (event) {
-   console.warn("Error when opening IndexDB");
-  };
-  request.onupgradeneeded = async function (event) {
-   const db: IDBDatabase = request.result;
+   request.onerror = (event) => {
+    reject(false);
+    throw new Error(`Error opening ${self.dataBaseName}.`);
+   };
 
-   self.db = db;
+   request.onupgradeneeded = async (event) => {
+    const db: IDBDatabase = request.result;
 
-   for (const collectionData of self.creationData.collections) {
-    if (!self.outsideZeneith) {
-     //add collections to zeneith
+    self.db = db;
+
+    for (const collectionData of self.creationData.collections) {
+     if (!self.outsideZeneith) {
+      //add collections to zeneith
+     }
+
+     const checkCollection = self.doesCollectionExists(collectionData.name);
+     let collection: IDBObjectStore;
+
+     if (checkCollection) {
+      const transaction = request.transaction;
+      const store = (transaction as any).objectStore(collectionData.name);
+      collection = store;
+     } else {
+      collection = db.createObjectStore(collectionData.name);
+     }
+
+     self._processCollectionScehma(collection, collectionData.schema);
     }
+   };
 
-    const checkCollection = self.doesCollectionExists(collectionData.name);
-    let collection: IDBObjectStore;
-
-    if (checkCollection) {
-     const transaction = request.transaction;
-     const store = (transaction as any).objectStore(collectionData.name);
-     collection = store;
-    } else {
-     collection = db.createObjectStore(collectionData.name);
+   request.onsuccess = (event) => {
+    if (!self.opened) {
+     request.result.close();
     }
-
-    self._processCollectionScehma(collection, collectionData.schema);
-   }
-  };
-
-  request.onsuccess = function (event) {
-   if (!self.opened) {
-    request.result.close();
-   }
-  };
+    resolve(true);
+   };
+  });
+  return prom;
  }
 
  _processCollectionScehma(collection: IDBObjectStore, schema: ZeneithSchema) {
@@ -112,15 +118,21 @@ export class DataBase {
   }
  }
 
+ updateCollectionScehma(collectionName: string, scehma: ZeneithSchema) {}
+
+ addNewCollection(collectionName: string, scehma: ZeneithSchema) {}
+
+ removeCollection(collectionName: string, scehma: ZeneithSchema) {}
+
  getDatabaeVersion() {
   const prom: Promise<number> = new Promise((resolve, reject) => {
    const request = window.indexedDB.open(this.dataBaseName);
-   request.onsuccess = function (event) {
+   request.onsuccess = (event) => {
     const version = request.result.version;
     request.result.close();
     resolve(version);
    };
-   request.onerror = function (event) {
+   request.onerror = (event) => {
     console.warn("Error when opening IndexDB");
     reject("Error when opening IndexDB");
    };
@@ -147,13 +159,17 @@ export class DataBase {
    const transaction = this.db.transaction([collectionName], "readonly");
    const objectStore = transaction.objectStore(collectionName);
    const request: IDBRequest<T> = objectStore.get(key);
-   request.onerror = function (event) {
-    transaction.commit();
+   request.onerror = (event) => {
     reject(false);
-   };
-   request.onsuccess = function (event) {
     transaction.commit();
-    resolve(request.result);
+   };
+   request.onsuccess = (event) => {
+    if (!request.result) {
+     resolve(false);
+    } else {
+     resolve(request.result);
+    }
+    transaction.commit();
    };
   });
   return prom;
@@ -168,17 +184,17 @@ export class DataBase {
     .transaction([collectionName], "readwrite")
     .objectStore(collectionName)
     .delete(key);
-   request.onerror = function (event) {
+   request.onerror = (event) => {
     reject(false);
    };
-   request.onsuccess = function (event) {
+   request.onsuccess = (event) => {
     resolve(true);
    };
   });
   return prom;
  }
 
- setData(collectionName: string, key: string, setData: any): Promise<boolean> {
+ setData<T>(collectionName: string, key: string, setData: T): Promise<boolean> {
   const prom: Promise<boolean> = new Promise((resolve, reject) => {
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
@@ -188,10 +204,10 @@ export class DataBase {
     .objectStore(collectionName);
 
    const requestUpdate = objectStore.put(setData, key);
-   requestUpdate.onerror = function (event) {
+   requestUpdate.onerror = (event) => {
     reject(false);
    };
-   requestUpdate.onsuccess = function (event) {
+   requestUpdate.onsuccess = (event) => {
     resolve(true);
    };
   });
@@ -212,10 +228,10 @@ export class DataBase {
     .objectStore(collectionName);
    objectStore.getAll();
    const request = objectStore.get(key);
-   request.onerror = function (event) {
+   request.onerror = (event) => {
     reject(false);
    };
-   request.onsuccess = function (event) {
+   request.onsuccess = (event) => {
     //@ts-ignore
     const data = event.target.result;
 
@@ -224,10 +240,10 @@ export class DataBase {
     }
 
     var requestUpdate = objectStore.put(data);
-    requestUpdate.onerror = function (event) {
+    requestUpdate.onerror = (event) => {
      reject(false);
     };
-    requestUpdate.onsuccess = function (event) {
+    requestUpdate.onsuccess = (event) => {
      resolve(true);
     };
    };
