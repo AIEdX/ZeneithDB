@@ -1,17 +1,17 @@
 {
-  "name": "ds-element-tree",
-  "version": "0.0.02",
-  "description": "A TypeScript library for creating an interactive UI.",
+  "name": "zeneithDB",
+  "version": "0.0.0",
+  "description": "A TypeScript library for working with IndexDB.",
   "type" : "module",
-  "main": "out/ElementTree.js",
-  "types": "out/ElementTree.d.ts",
+  "main": "out/index.js",
+  "types": "out/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "url" : "https://github.com/Divine-Star-Software/ElementTree"
+    "url" : "https://github.com/Divine-Star-Software/ZeneithDB"
   },
-  "homepage": "https://github.com/Divine-Star-Software/ElementTree",
+  "homepage": "https://github.com/Divine-Star-Software/ZeneithDB",
   "author": "Divine Star Software",
   "license": "MIT",
   "devDependencies": {
