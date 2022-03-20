@@ -8,6 +8,9 @@
 
 ---
 
+This is a TypeScript library that uses the IndexDB API to create a database in the browser. It is more focused on making desktop applications with Electron. 
+
+
 
 
 
