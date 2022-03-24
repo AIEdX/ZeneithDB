@@ -1,7 +1,7 @@
 {
-  "name": "zeneithdb",
+  "name": "crystalline-state",
   "version": "0.0.1",
-  "description": "A TypeScript library for working with IndexDB.",
+  "description": "A TypeScript library to manage the state of an app.",
   "type" : "module",
   "main": "out/index.js",
   "types": "out/index.d.ts",
@@ -9,9 +9,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "url" : "https://github.com/Divine-Star-Software/ZeneithDB"
+    "url" : "https://github.com/Divine-Star-Software/CrystallineState"
   },
-  "homepage": "https://github.com/Divine-Star-Software/ZeneithDB",
+  "homepage": "https://github.com/Divine-Star-Software/CrystallineState",
   "author": "Divine Star Software",
   "license": "MIT",
   "devDependencies": {

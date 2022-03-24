@@ -1,41 +1,36 @@
-import { ZeneithDB } from "../../../out/index.js";
-import type { DataBase,ZeneithDatabaseCreationData } from "../../../out/index.js";
-(async () => {
- await ZeneithDB.$INIT();
- const dbName = "zeneith-example-one";
- const dbData: ZeneithDatabaseCreationData = {
-  databaseName: dbName,
-  collections: [
-   {
-    name: "collection1",
-    schema: [
-     {
-      name: "id",
-      valueType: "string",
-      index: true,
-      isUnique: true,
-     },
-    ],
-   },
-  ],
+import { CrystallineState } from "../../out/index.js";
+
+type StateEventMap = {
+ IDLE: {
+  START: {
+   data: any;
+  };
  };
- const existanceCheck = await ZeneithDB.databaseExists(dbName);
- let database: DataBase;
- if (!existanceCheck) {
-  database = await ZeneithDB.createDatabase(dbData);
- } else {
-  database = await ZeneithDB.getDatabase(dbName);
- }
- await database.open();
- await database.setData("collection1", "test-1", {
-  data1: {
-   key: "1",
-  },
-  data2: {
-   key: "2",
-  },
- });
- const data = await database.getData("collection1", "test-1");
- document.body.innerText = JSON.stringify(data, undefined, 4);
- database.close();
-})();
+ IDLE2: {
+  START2: {
+   data: any;
+  };
+  START3: {
+   data: any;
+  };
+ };
+};
+
+const machine = CrystallineState.createStateMachine<StateEventMap>({
+ name: "test",
+ historyLength: 0,
+});
+
+machine.registerState("IDLE", {
+ START: "IDLE",
+});
+machine.registerState("IDLE2", {
+ START2: "IDLE",
+ START3: "IDLE",
+});
+
+machine.addToStateEvent("IDLE", "START", (args) => {
+ console.log(args.data);
+});
+
+machine.triggerEventOnState("IDLE", "START", { data: "triggered the event." });

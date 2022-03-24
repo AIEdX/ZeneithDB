@@ -1,43 +1,32 @@
 {
-    "sources": [
-        {
-            "dir": "D:/DSSoftware/DSLIBS/zeneithDB/out",
-            "fileExtensions": [
-                "js","d.ts"
-            ],
-            "id": "main"
-        }
-    ],
-    "outputs": [
-        {
-            "dir": "D:/DSSoftware/DSLIBS/zeneithDB/electron/out",
-            "sourceID": "main",
-            "codeSection": "All",
-            "keepComments": true
-        },
-        {
-            "dir": "D:/DSSoftware/DSLIBS/zeneithDB/electron/app/out",
-            "sourceID": "main",
-            "codeSection": "All",
-            "keepComments": true
-        }
-    ],
-    "codeSections": {
-        "test": {
-            "start": "@ds-test-start",
-            "end": "@ds-test-end"
-        },
-        "log": {
-            "start": "@ds-test-log",
-            "end": "@ds-test-log"
-        },
-        "perf": {
-            "start": "@ds-test-perf",
-            "end": "@ds-test-perf"
-        },
-        "dev": {
-            "start": "@ds-test-dev",
-            "end": "@ds-test-dev"
-        }
-    }
+ "sources": [
+  {
+   "dir": "D:/DSSoftware/DSLIBS/crystallineState/out",
+   "fileExtensions": [
+    "js",
+    "d.ts"
+   ],
+   "id": "main"
+  }
+ ],
+ "outputs": [
+  {
+   "dir": "D:/DSSoftware/DSLIBS/crystallineState/electron/out",
+   "sourceID": "main",
+   "codeSection": "All",
+   "keepComments": true
+  },
+  {
+   "dir": "D:/DSSoftware/DSLIBS/crystallineState/electron/app/out",
+   "sourceID": "main",
+   "codeSection": "All",
+   "keepComments": true
+  }
+ ],
+ "codeSections": {
+  "test": {
+   "start": "@ds-test-start",
+   "end": "@ds-test-end"
+  }
+ }
 }

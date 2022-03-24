@@ -1,63 +1,56 @@
 <h1 align="center">
-   ZeneithDB
+   Crystalline State
 </h1>
 
 <p align="center">
-<img src="https://i.ibb.co/cXHYWS3/zeneithdbsmall.png" alt="zeneithdbsmall" border="0">
+<img src="https://i.ibb.co/Vg6knp0/crystalstatelogo.png" alt="crystalstatelogo" border="0">
 </p>
 
 ---
 
-**WARNING** This is still in early development. Not everything works yet but will soon!
+This is a simple TypeScript library for a state machine that can be used to manage the state of an app.
 
-This is a TypeScript library that uses the IndexDB API to create a database in the browser. It is more focused on making desktop applications with Electron.
+You define it's states, the events for state, and the resulting state when it is triggered. 
+You can also define the type of args to pass each function call when an event is triggered. 
 
-Zeneith allows you to define the databases and their collections using JSON objects. It will auto-update databases as well when a collection is added or removed. 
-
-It provides an async/await API for doing CURD operations. 
-
-Planned future features include a query system, schema validation, and Worker API operations. 
+Here is an example of how to use it:
 
 ```ts
-import { ZeneithDB } from "ZeneithDB";
-import type { DataBase, ZeneithDatabaseCreationData } from "ZeneithDB";
-(async () => {
- await ZeneithDB.$INIT();
- const dbName = "zeneith-example-one";
- const dbData: ZeneithDatabaseCreationData = {
-  databaseName: dbName,
-  collections: [
-   {
-    name: "collection1",
-    schema: [
-     {
-      name: "id",
-      valueType: "string",
-      index: true,
-      isUnique: true,
-     },
-    ],
-   },
-  ],
+import { CrystallineState } from "../../out/index.js";
+
+type StateEventMap = {
+ IDLE: {
+  START: {
+   data: any;
+  };
  };
- const existanceCheck = await ZeneithDB.databaseExists(dbName);
- let database: DataBase;
- if (!existanceCheck) {
-  database = await ZeneithDB.createDatabase(dbData);
- } else {
-  database = await ZeneithDB.getDatabase(dbName);
- }
- await database.open();
- await database.setData("collection1", "test-1", {
-  data1: {
-   key: "1",
-  },
-  data2: {
-   key: "2",
-  },
- });
- const data = await database.getData("collection1", "test-1");
- document.body.innerText = JSON.stringify(data, undefined, 4);
- database.close();
-})();
+ IDLE2: {
+  START2: {
+   data: any;
+  };
+  START3: {
+   data: any;
+  };
+ };
+};
+
+const machine = CrystallineState.createStateMachine<StateEventMap>({
+ name: "test",
+ historyLength: 0,
+});
+
+machine.registerState("IDLE", {
+ START: "IDLE",
+});
+machine.registerState("IDLE2", {
+ START2: "IDLE",
+ START3: "IDLE",
+});
+
+machine.addToStateEvent("IDLE", "START", (args) => {
+ console.log(args.data);
+});
+
+machine.triggerEventOnState("IDLE", "START", { data: "triggered the event." });
 ```
+
