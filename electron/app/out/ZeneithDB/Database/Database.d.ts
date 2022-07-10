@@ -14,6 +14,8 @@ export declare class DataBase {
     getUUID(): string;
     open(): Promise<boolean> | true;
     close(): boolean;
+    _openAtVersion(version?: number): Promise<boolean>;
+    $create(): Promise<boolean>;
     forceUpdate(): Promise<boolean>;
     _processCollectionScehma(collection: IDBObjectStore, schema: ZeneithSchema): void;
     __traverseColletionScehma(collection: IDBObjectStore, schema: ZeneithSchema): void;

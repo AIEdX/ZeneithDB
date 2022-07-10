@@ -37,18 +37,29 @@ export class ZeneithDBCore {
   );
 
   await this.dataBase.open();
-  const versionData = await this.dataBase.getData<number | false>(
-   "meta",
-   "main"
-  );
 
-  if (!versionData || versionData < this.zeneith.__version) {
-   this.dataBase.forceUpdate();
-   await this.dataBase.setData("meta", "main", {
-    version: this.zeneith.__version,
-   });
+  const open = async () => {
+   const versionData = await this.dataBase.getData<number | false>(
+    "meta",
+    "main"
+   );
+
+   if (!versionData || versionData < this.zeneith.__version) {
+    this.dataBase.forceUpdate();
+    await this.dataBase.setData("meta", "main", {
+     version: this.zeneith.__version,
+    });
+   }
+   this.dataBase.close();
+  };
+
+  try {
+   await open();
+  } catch (error) {
+   console.warn("Zeneith Is Being Created.");
+   await this.dataBase.$create();
+   await open();
   }
-  this.dataBase.close();
  }
 
  async createDatabase(data: ZeneithDatabaseCreationData) {

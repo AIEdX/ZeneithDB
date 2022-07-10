@@ -44,6 +44,49 @@ export class DataBase {
         this.db = null;
         return true;
     }
+    _openAtVersion(version = 1) {
+        const self = this;
+        const prom = new Promise(async (resolve, reject) => {
+            const request = window.indexedDB.open(this.dataBaseName, version);
+            request.onerror = (event) => {
+                throw new Error(`Error opening ${self.dataBaseName}.`);
+            };
+            request.onblocked = () => {
+                console.log("blocked");
+            };
+            request.onsuccess = (event) => {
+                self.db = request.result;
+                resolve(true);
+            };
+        });
+        return prom;
+    }
+    async $create() {
+        const self = this;
+        await this._openAtVersion(1);
+        self.db?.close();
+        const prom = new Promise(async (resolve, reject) => {
+            const request = window.indexedDB.open(this.dataBaseName, 2);
+            request.onerror = (event) => {
+                throw new Error(`Error opening ${self.dataBaseName}.`);
+            };
+            request.onblocked = (event) => { };
+            request.onupgradeneeded = async (event) => {
+                const db = request.result;
+                self.db = db;
+                const transaction = request.transaction;
+                for (const collectionData of self.creationData.collections) {
+                    db.createObjectStore(collectionData.name);
+                }
+                transaction?.commit();
+                transaction.oncomplete = () => {
+                    resolve(true);
+                };
+            };
+            request.onsuccess = (event) => { };
+        });
+        return prom;
+    }
     async forceUpdate() {
         const self = this;
         const prom = new Promise(async (resolve, reject) => {
