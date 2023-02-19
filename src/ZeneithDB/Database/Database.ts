@@ -1,9 +1,5 @@
-import { ZeneithDatabaseCreationData } from "ZeneithDB/Meta/Database/Database.types";
-import {
- ZeneithSchema,
- ZeneithSchemaNode,
- ZeneithSchemaNodes,
-} from "ZeneithDB/Meta/Database/Schema.types";
+import type { ZeneithDatabaseCreationData } from "../Meta/Database/Database.types";
+import type { ZeneithSchema } from "../Meta/Database/Schema.types";
 import { ZeneithUtil } from "../ZeneithUtil.js";
 
 export class DataBase {
@@ -31,7 +27,7 @@ export class DataBase {
   if (this.isOpen()) return true;
   const self = this;
   const prom: Promise<boolean> = new Promise((resolve, reject) => {
-   const request = window.indexedDB.open(this.dataBaseName);
+   const request = indexedDB.open(this.dataBaseName);
    request.onerror = function (event) {
     console.warn("Error when opening IndexDB");
     reject(false);
@@ -58,7 +54,7 @@ export class DataBase {
  _openAtVersion(version = 1) {
   const self = this;
   const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
-   const request = window.indexedDB.open(this.dataBaseName, version);
+   const request = indexedDB.open(this.dataBaseName, version);
 
    request.onerror = (event) => {
     throw new Error(`Error opening ${self.dataBaseName}.`);
@@ -81,7 +77,7 @@ export class DataBase {
   await this._openAtVersion(1);
   self.db?.close();
   const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
-   const request = window.indexedDB.open(this.dataBaseName, 2);
+   const request = indexedDB.open(this.dataBaseName, 2);
 
    request.onerror = (event) => {
     throw new Error(`Error opening ${self.dataBaseName}.`);
@@ -98,9 +94,8 @@ export class DataBase {
     }
     transaction?.commit();
     (transaction as any).oncomplete = () => {
-        resolve(true);
-    }
- 
+     resolve(true);
+    };
    };
 
    request.onsuccess = (event) => {};
@@ -113,7 +108,7 @@ export class DataBase {
   const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
    let version = await this.getDatabaeVersion();
 
-   const request = window.indexedDB.open(this.dataBaseName, version + 1);
+   const request = indexedDB.open(this.dataBaseName, version + 1);
 
    request.onerror = (event) => {
     reject(false);
@@ -182,7 +177,7 @@ export class DataBase {
 
  getDatabaeVersion() {
   const prom: Promise<number> = new Promise((resolve, reject) => {
-   const request = window.indexedDB.open(this.dataBaseName);
+   const request = indexedDB.open(this.dataBaseName);
    request.onsuccess = (event) => {
     const version = request.result.version;
     request.result.close();

@@ -1,8 +1,8 @@
-import { ZeneithDB } from "./ZeneithDB.js";
+import type { ZeneithDatabaseCreationData } from "./Meta/Database/Database.types.js";
+import type { ZeneithDatabaseSchema } from "./Meta/Zeneith/Database.schema.js";
 
+import { ZeneithDB } from "./ZeneithDB.js";
 import { DataBase } from "./Database/Database.js";
-import { ZeneithDatabaseCreationData } from "./Meta/Database/Database.types.js";
-import { ZeneithDatabaseSchema } from "./Meta/Zeneith/Database.schema.js";
 import { ZeneithUtil } from "./ZeneithUtil.js";
 
 export class ZeneithDBCore {

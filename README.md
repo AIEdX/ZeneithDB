@@ -7,16 +7,9 @@
 </p>
 
 ---
+This is a simple library for interacting with indexDB. 
 
-**WARNING** This is still in early development. Not everything works yet but will soon!
-
-This is a TypeScript library that uses the IndexDB API to create a database in the browser. It is more focused on making desktop applications with Electron.
-
-Zeneith allows you to define the databases and their collections using JSON objects. It will auto-update databases as well when a collection is added or removed. 
-
-It provides an async/await API for doing CURD operations. 
-
-Planned future features include a query system, schema validation, and Worker API operations. 
+It keeps tracks of databases for you and makes it easy to upgrade and delete databases as well as do basic CRUD operations. 
 
 ```ts
 import { ZeneithDB } from "ZeneithDB";

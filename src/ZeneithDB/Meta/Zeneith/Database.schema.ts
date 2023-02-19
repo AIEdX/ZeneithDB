@@ -1,4 +1,4 @@
-import { ZeneithDatabaseCreationData } from "../Database/Database.types"
+import type { ZeneithDatabaseCreationData } from "../Database/Database.types"
 
 export type ZeneithDatabaseSchema = {
     collectionCount : number,

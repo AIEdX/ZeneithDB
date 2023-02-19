@@ -22,7 +22,7 @@ export class DataBase {
             return true;
         const self = this;
         const prom = new Promise((resolve, reject) => {
-            const request = window.indexedDB.open(this.dataBaseName);
+            const request = indexedDB.open(this.dataBaseName);
             request.onerror = function (event) {
                 console.warn("Error when opening IndexDB");
                 reject(false);
@@ -47,7 +47,7 @@ export class DataBase {
     _openAtVersion(version = 1) {
         const self = this;
         const prom = new Promise(async (resolve, reject) => {
-            const request = window.indexedDB.open(this.dataBaseName, version);
+            const request = indexedDB.open(this.dataBaseName, version);
             request.onerror = (event) => {
                 throw new Error(`Error opening ${self.dataBaseName}.`);
             };
@@ -66,7 +66,7 @@ export class DataBase {
         await this._openAtVersion(1);
         self.db?.close();
         const prom = new Promise(async (resolve, reject) => {
-            const request = window.indexedDB.open(this.dataBaseName, 2);
+            const request = indexedDB.open(this.dataBaseName, 2);
             request.onerror = (event) => {
                 throw new Error(`Error opening ${self.dataBaseName}.`);
             };
@@ -91,7 +91,7 @@ export class DataBase {
         const self = this;
         const prom = new Promise(async (resolve, reject) => {
             let version = await this.getDatabaeVersion();
-            const request = window.indexedDB.open(this.dataBaseName, version + 1);
+            const request = indexedDB.open(this.dataBaseName, version + 1);
             request.onerror = (event) => {
                 reject(false);
                 throw new Error(`Error opening ${self.dataBaseName}.`);
@@ -149,7 +149,7 @@ export class DataBase {
     removeCollection(collectionName: string, scehma: ZeneithSchema) {} */
     getDatabaeVersion() {
         const prom = new Promise((resolve, reject) => {
-            const request = window.indexedDB.open(this.dataBaseName);
+            const request = indexedDB.open(this.dataBaseName);
             request.onsuccess = (event) => {
                 const version = request.result.version;
                 request.result.close();

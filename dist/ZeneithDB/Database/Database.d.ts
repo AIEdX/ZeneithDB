@@ -1,5 +1,5 @@
-import { ZeneithDatabaseCreationData } from "ZeneithDB/Meta/Database/Database.types";
-import { ZeneithSchema } from "ZeneithDB/Meta/Database/Schema.types";
+import type { ZeneithDatabaseCreationData } from "../Meta/Database/Database.types";
+import type { ZeneithSchema } from "../Meta/Database/Schema.types";
 export declare class DataBase {
     creationData: ZeneithDatabaseCreationData;
     outsideZeneith: boolean;
