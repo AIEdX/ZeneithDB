@@ -15,12 +15,14 @@ export declare class DataBase {
     open(): Promise<boolean> | true;
     close(): boolean;
     _openAtVersion(version?: number): Promise<boolean>;
-    $create(): Promise<boolean>;
-    forceUpdate(): Promise<boolean>;
+    $create(): Promise<void>;
+    forceUpdate(removeCollections?: string[], newDB?: boolean): Promise<boolean>;
     _processCollectionScehma(collection: IDBObjectStore, schema: ZeneithSchema): void;
     __traverseColletionScehma(collection: IDBObjectStore, schema: ZeneithSchema): void;
+    addNewCollection(collectionName: string, scehma: ZeneithSchema): Promise<boolean>;
+    removeCollection(collectionName: string | string[]): Promise<boolean>;
     getDatabaeVersion(): Promise<number>;
-    doesCollectionExists(collectionName: string): boolean;
+    doesCollectionExist(collectionName: string): boolean;
     getData<T>(collectionName: string, key: string): Promise<T | false>;
     getAllData<T>(collectionName: string): Promise<T[] | false>;
     getAllKeys(collectionName: string): Promise<IDBValidKey[] | false>;

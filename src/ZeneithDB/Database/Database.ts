@@ -1,3 +1,4 @@
+import { ZeneithDBCore } from "../ZeneithDBCore.js";
 import type { ZeneithDatabaseCreationData } from "../Meta/Database/Database.types";
 import type { ZeneithSchema } from "../Meta/Database/Schema.types";
 import { ZeneithUtil } from "../ZeneithUtil.js";
@@ -46,6 +47,7 @@ export class DataBase {
   if (!this.db) {
    return false;
   }
+  this.opened = false;
   this.db.close();
   this.db = null;
   return true;
@@ -57,15 +59,20 @@ export class DataBase {
    const request = indexedDB.open(this.dataBaseName, version);
 
    request.onerror = (event) => {
+    reject(false);
+    console.log(event);
     throw new Error(`Error opening ${self.dataBaseName}.`);
    };
 
    request.onblocked = () => {
-    console.log("blocked");
+    console.log("blocked at version");
+    reject(false);
    };
 
    request.onsuccess = (event) => {
     self.db = request.result;
+    self.opened = true;
+
     resolve(true);
    };
   });
@@ -73,59 +80,44 @@ export class DataBase {
  }
 
  async $create() {
-  const self = this;
-  await this._openAtVersion(1);
-  self.db?.close();
-  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
-   const request = indexedDB.open(this.dataBaseName, 2);
-
-   request.onerror = (event) => {
-    throw new Error(`Error opening ${self.dataBaseName}.`);
-   };
-
-   request.onblocked = (event) => {};
-
-   request.onupgradeneeded = async (event) => {
-    const db: IDBDatabase = request.result;
-    self.db = db;
-    const transaction = request.transaction;
-    for (const collectionData of self.creationData.collections) {
-     db.createObjectStore(collectionData.name);
-    }
-    transaction?.commit();
-    (transaction as any).oncomplete = () => {
-     resolve(true);
-    };
-   };
-
-   request.onsuccess = (event) => {};
-  });
-  return prom;
+  await this.forceUpdate(undefined, true);
  }
 
- async forceUpdate() {
+ async forceUpdate(removeCollections?: string[], newDB = false) {
   const self = this;
-  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
-   let version = await this.getDatabaeVersion();
+  let version = newDB ? 1 : await this.getDatabaeVersion();
+  if (this.opened) {
+   this.close();
+  }
 
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
    const request = indexedDB.open(this.dataBaseName, version + 1);
 
    request.onerror = (event) => {
     reject(false);
+    console.log(event);
     throw new Error(`Error opening ${self.dataBaseName}.`);
    };
+   request.onblocked = (event) => {
+    console.log("blocked");
+    console.log(event);
+    reject(false);
+   };
 
-   request.onupgradeneeded = async (event) => {
+   request.onupgradeneeded = (event) => {
     const db: IDBDatabase = request.result;
 
     self.db = db;
-
-    for (const collectionData of self.creationData.collections) {
-     if (!self.outsideZeneith) {
-      //add collections to zeneith
+    if (!self.outsideZeneith) {
+     ZeneithDBCore.updateDatBaseData(self.creationData);
+    }
+    if (removeCollections) {
+     for (const collectionName of removeCollections) {
+      db.deleteObjectStore(collectionName);
      }
-
-     const checkCollection = self.doesCollectionExists(collectionData.name);
+    }
+    for (const collectionData of self.creationData.collections) {
+     const checkCollection = self.doesCollectionExist(collectionData.name);
      let collection: IDBObjectStore;
 
      if (checkCollection) {
@@ -138,13 +130,12 @@ export class DataBase {
 
      self._processCollectionScehma(collection, collectionData.schema);
     }
+    resolve(true);
    };
 
    request.onsuccess = (event) => {
-    if (!self.opened) {
-     request.result.close();
-    }
-    resolve(true);
+    self.db = request.result;
+    self.opened = true;
    };
   });
   return prom;
@@ -169,11 +160,49 @@ export class DataBase {
   }
  }
 
- /*  updateCollectionScehma(collectionName: string, scehma: ZeneithSchema) {}
+ async addNewCollection(collectionName: string, scehma: ZeneithSchema) {
+  try {
+   this.creationData.collections.push({
+    name: collectionName,
+    schema: scehma,
+   });
+   await this.forceUpdate();
+   return true;
+  } catch (error: any) {
+   console.log(
+    `Failed making a new collection with the name ${collectionName}`
+   );
+   console.error(error);
+   return false;
+  }
+ }
 
- addNewCollection(collectionName: string, scehma: ZeneithSchema) {}
+ async removeCollection(collectionName: string | string[]) {
+  try {
+   let deleteCollections: string[] = [];
+   if (typeof collectionName == "string") {
+    deleteCollections.push(collectionName);
+   } else {
+    deleteCollections.push(...collectionName);
+   }
+   const collections: any[] = [];
+   for (const collection of this.creationData.collections) {
+    if (!deleteCollections.includes(collection.name)) {
+     collections.push(collection);
+    }
+   }
+   this.creationData.collections = collections;
 
- removeCollection(collectionName: string, scehma: ZeneithSchema) {} */
+   await this.forceUpdate(deleteCollections);
+   return true;
+  } catch (error: any) {
+   console.log(
+    `Failed making a new collection with the name ${collectionName}`
+   );
+   console.error(error);
+   return false;
+  }
+ }
 
  getDatabaeVersion() {
   const prom: Promise<number> = new Promise((resolve, reject) => {
@@ -191,7 +220,7 @@ export class DataBase {
   return prom;
  }
 
- doesCollectionExists(collectionName: string): boolean {
+ doesCollectionExist(collectionName: string): boolean {
   if (!this.db) {
    throw new Error(`Database ${this.dataBaseName} is not opened.`);
   }
@@ -203,7 +232,8 @@ export class DataBase {
  }
 
  getData<T>(collectionName: string, key: string): Promise<T | false> {
-  const prom: Promise<T | false> = new Promise((resolve, reject) => {
+  const prom: Promise<T | false> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }
@@ -227,7 +257,8 @@ export class DataBase {
  }
 
  getAllData<T>(collectionName: string): Promise<T[] | false> {
-  const prom: Promise<T[] | false> = new Promise((resolve, reject) => {
+  const prom: Promise<T[] | false> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }
@@ -254,7 +285,8 @@ export class DataBase {
 
  getAllKeys(collectionName: string): Promise<IDBValidKey[] | false> {
   const prom: Promise<IDBValidKey[] | false> = new Promise(
-   (resolve, reject) => {
+   async (resolve, reject) => {
+    if (!this.isOpen()) await this.open();
     if (!this.db) {
      throw new Error(`Database ${this.dataBaseName} is not opened.`);
     }
@@ -281,7 +313,8 @@ export class DataBase {
  }
 
  removeData(collectionName: string, key: string): Promise<boolean> {
-  const prom: Promise<boolean> = new Promise((resolve, reject) => {
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }
@@ -300,7 +333,8 @@ export class DataBase {
  }
 
  removeAllData(collectionName: string): Promise<boolean> {
-  const prom: Promise<boolean> = new Promise((resolve, reject) => {
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }
@@ -319,7 +353,8 @@ export class DataBase {
  }
 
  setData<T>(collectionName: string, key: string, setData: T): Promise<boolean> {
-  const prom: Promise<boolean> = new Promise((resolve, reject) => {
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }
@@ -343,7 +378,8 @@ export class DataBase {
   key: string,
   updateFunction: (data: T) => T
  ): Promise<boolean> {
-  const prom: Promise<boolean> = new Promise((resolve, reject) => {
+  const prom: Promise<boolean> = new Promise(async (resolve, reject) => {
+   if (!this.isOpen()) await this.open();
    if (!this.db) {
     throw new Error(`Database ${this.dataBaseName} is not opened.`);
    }

@@ -1,24 +1,26 @@
 import { ZeneithDBCore } from "./ZeneithDBCore.js";
 export const ZeneithDB = {
-    __version: 0.1,
-    core: new ZeneithDBCore(),
-    $INIT: async function () {
+    __initalized: false,
+    core: ZeneithDBCore,
+    async $INIT() {
+        if (this.__initalized)
+            return;
         await this.core.initialize();
+        this.__initalized = true;
     },
-    databaseExists: async function (dataBaseName) {
-        return await this.core.checkIfDatabaseExists(dataBaseName);
+    async databaseExists(dataBaseName) {
+        return await this.core.dataBaseExist(dataBaseName);
     },
-    createDatabase: async function (data) {
-        return this.core.createDatabase(data);
+    async createDatabase(data) {
+        return this.core.createDataBase(data);
     },
-    updateDatabase: function (data) {
-        return this.core.createDatabase(data);
+    async updateDatabase(data) {
+        return this.core.createDataBase(data);
     },
-    getDatabase: function (name) {
-        return this.core.getDatabase(name);
+    async getDatabase(name) {
+        return this.core.getDataBase(name);
     },
-    deleteDatabase: function (name) {
-        return this.core.deleteDatabase(name);
+    async deleteDatabase(name) {
+        return this.core.deleteDataBase(name);
     },
 };
-ZeneithDB.core.zeneith = ZeneithDB;
